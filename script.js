@@ -215,87 +215,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   statNumbers.forEach(num => countObserver.observe(num));
 
-  // ---- Background Canvas (subtle particle grid) ----
-  const canvas = document.getElementById('bg-canvas');
-  if (canvas) {
-    const ctx = canvas.getContext('2d');
-    let w, h, particles = [];
-
-    const resize = () => {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener('resize', resize);
-
-    // Create sparse particles
-    const createParticles = () => {
-      particles = [];
-      const count = Math.floor((w * h) / 22000);
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x: Math.random() * w,
-          y: Math.random() * h,
-          r: Math.random() * 1.2 + 0.3,
-          vx: (Math.random() - 0.5) * 0.2,
-          vy: (Math.random() - 0.5) * 0.2,
-          a: Math.random() * 0.4 + 0.1
-        });
-      }
-    };
-    createParticles();
-    window.addEventListener('resize', createParticles);
-
-    let animationFrameId;
-    let isTabVisible = true;
-
-    const draw = () => {
-      if (!isTabVisible) return;
-      ctx.clearRect(0, 0, w, h);
-      const isLight = document.documentElement.getAttribute('data-theme') === 'light';
-      const particleColor = isLight ? '80, 110, 140' : '159, 180, 199';
-
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(${particleColor}, ${p.a})`;
-        ctx.fill();
-      });
-
-      // Draw faint connections
-      particles.forEach((p, i) => {
-        particles.slice(i + 1).forEach(q => {
-          const dist = Math.hypot(p.x - q.x, p.y - q.y);
-          if (dist < 120) {
-            const alpha = (1 - dist / 120) * 0.06;
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(q.x, q.y);
-            ctx.strokeStyle = `rgba(${particleColor}, ${alpha})`;
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
-          }
-        });
-      });
-
-      animationFrameId = requestAnimationFrame(draw);
-    };
-    draw();
-
+  // ---- Background Video Visibility Handler ----
+  const bgVideo = document.getElementById('bg-video');
+  if (bgVideo) {
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        isTabVisible = false;
-        cancelAnimationFrame(animationFrameId);
+        bgVideo.pause();
       } else {
-        isTabVisible = true;
-        draw();
+        bgVideo.play().catch(err => console.log("Video play interrupted:", err));
       }
     });
   }
